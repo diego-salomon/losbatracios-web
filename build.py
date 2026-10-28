@@ -7,6 +7,20 @@ from PIL import Image
 import base64, json, pathlib, shutil
 
 R = pathlib.Path(__file__).resolve().parent
+
+
+def _copia(src, dst):
+    """Copia un archivo; si falta (fuentes con licencia, press kits), avisa y sigue."""
+    src = pathlib.Path(src)
+    if not src.exists():
+        print('aviso: falta', src.relative_to(R), '(se omite)')
+        return
+    shutil.copy(src, dst)
+
+
+def _lee(path):
+    path = pathlib.Path(path)
+    return path.read_bytes() if path.exists() else b''
 DOM = 'https://losbatracios.com'
 UMAMI_ID = 'd8a1574c-2c2b-450b-9d00-d00bf395b85f'
 BUTTONDOWN = 'los_batracios'
@@ -850,12 +864,12 @@ def construir_sitio():
     (S / 'en' / 'index.html').write_text(pagina_sitio('en'), encoding='utf-8')
     (S / 'privacidad' / 'index.html').write_text(pagina_privacidad('es'), encoding='utf-8')
     (S / 'en' / 'privacy' / 'index.html').write_text(pagina_privacidad('en'), encoding='utf-8')
-    shutil.copy(R / 'src/extra/casa-1600.jpg', S / 'img/casa.jpg'); shutil.copy(R / 'src/extra/casa.webp', S / 'img/casa.webp'); shutil.copy(R / 'src/extra/casa-800.webp', S / 'img/casa-800.webp')
-    for f in ['compartir-es.jpg', 'compartir-en.jpg', 'icono-32.png', 'icono-180.png']: shutil.copy(R / 'src/extra' / f, S / 'img' / f)
-    for k in ['mammoth', 'not', 'kyiv', 'elco']: shutil.copy(R / 'src/img' / ('laurel-%s-blanco.png' % k), S / 'img')
-    for k in ['nau', 'oma', 'genuino']: shutil.copy(R / 'src/img' / ('logo-%s-azul.png' % k), S / 'img')
-    for f in ['AeonikRegular.otf', 'Aeonik-Bold.otf']: shutil.copy(R / 'fonts' / f, S / 'fonts' / f)
-    shutil.copy(R / 'src/img/besitos.gif', S / 'img/besitos.gif')  # GIF del correo de bienvenida
+    _copia(R / 'src/extra/casa-1600.jpg', S / 'img/casa.jpg'); _copia(R / 'src/extra/casa.webp', S / 'img/casa.webp'); _copia(R / 'src/extra/casa-800.webp', S / 'img/casa-800.webp')
+    for f in ['compartir-es.jpg', 'compartir-en.jpg', 'icono-32.png', 'icono-180.png']: _copia(R / 'src/extra' / f, S / 'img' / f)
+    for k in ['mammoth', 'not', 'kyiv', 'elco']: _copia(R / 'src/img' / ('laurel-%s-blanco.png' % k), S / 'img')
+    for k in ['nau', 'oma', 'genuino']: _copia(R / 'src/img' / ('logo-%s-azul.png' % k), S / 'img')
+    for f in ['AeonikRegular.otf', 'Aeonik-Bold.otf']: _copia(R / 'fonts' / f, S / 'fonts' / f)
+    _copia(R / 'src/img/besitos.gif', S / 'img/besitos.gif')  # GIF del correo de bienvenida
     # laureles desde los originales en alta de cada festival (src/hd), en blanco, hasta 900 px de ancho
     for k in ['mammoth', 'not', 'kyiv', 'elco']:
         im = Image.open(R / 'src/hd' / ('%s-blanco.png' % k)).convert('RGBA'); ancho = min(600, im.width)
@@ -865,7 +879,7 @@ def construir_sitio():
     for k in ['nau', 'oma', 'genuino']:
         Image.open(R / 'src/img' / ('logo-%s-azul.png' % k)).convert('RGBA').quantize(colors=64, method=Image.FASTOCTREE, dither=Image.NONE).save(S / 'img' / ('logo-%s-azul.png' % k), optimize=True)
     # press kits del 14 oct (versión liviana, sin screener ni clave, con enlace a fotogramas)
-    shutil.copy(R / 'src/pk/press-kit-es.pdf', S / 'press-kit.pdf'); shutil.copy(R / 'src/pk/press-kit-en.pdf', S / 'press-kit-en.pdf')
+    _copia(R / 'src/pk/press-kit-es.pdf', S / 'press-kit.pdf'); _copia(R / 'src/pk/press-kit-en.pdf', S / 'press-kit-en.pdf')
     (S / 'llms.txt').write_text(LLMS, encoding='utf-8')
     (S / '404.html').write_text(pagina_404(), encoding='utf-8')
     (S / '_redirects').write_text("""# Enlaces cortos por canal (para saber de dónde llega la gente)
@@ -900,7 +914,7 @@ def construir_vista():
     if V.exists(): shutil.rmtree(V)
     (V / 'img').mkdir(parents=True)
     fonts = ''.join("@font-face{font-family:'Aeonik';font-weight:%d;font-style:normal;font-display:swap;src:url(data:font/otf;base64,%s) format('opentype')}\n"
-                    % (w, base64.b64encode((R / f).read_bytes()).decode()) for w, f in [(400, 'fonts/AeonikRegular.otf'), (700, 'fonts/Aeonik-Bold.otf')])
+                    % (w, base64.b64encode(_lee(R / f)).decode()) for w, f in [(400, 'fonts/AeonikRegular.otf'), (700, 'fonts/Aeonik-Bold.otf')])
     js = """
 <script>
 (function(){
@@ -927,9 +941,9 @@ def construir_vista():
             '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&display=swap">\n'
             '<style>\n' + fonts + CSS + '</style>\n' + body('es', True) + js + CONVERSA)
     (V / 'index.html').write_text(html, encoding='utf-8')
-    shutil.copy(R / 'src/img/casa.jpg', V / 'img/casa.jpg')
-    for k in ['mammoth', 'not', 'kyiv', 'elco']: shutil.copy(R / 'src/img' / ('laurel-%s-blanco.png' % k), V / 'img')
-    for k in ['nau', 'oma', 'genuino']: shutil.copy(R / 'src/img' / ('logo-%s-azul.png' % k), V / 'img')
+    _copia(R / 'src/img/casa.jpg', V / 'img/casa.jpg')
+    for k in ['mammoth', 'not', 'kyiv', 'elco']: _copia(R / 'src/img' / ('laurel-%s-blanco.png' % k), V / 'img')
+    for k in ['nau', 'oma', 'genuino']: _copia(R / 'src/img' / ('logo-%s-azul.png' % k), V / 'img')
     return V
 
 
