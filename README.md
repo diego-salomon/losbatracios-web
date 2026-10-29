@@ -8,6 +8,7 @@
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages_%2B_Workers-F38020?logo=cloudflare&logoColor=white&style=flat-square)](https://pages.cloudflare.com)
 [![Python build](https://img.shields.io/badge/build-Python-3776AB?logo=python&logoColor=white&style=flat-square)](#how-its-built)
 [![No framework](https://img.shields.io/badge/no_framework-plain_HTML_%2B_WebP-555?style=flat-square)](#how-its-built)
+[![Portfolio](https://img.shields.io/badge/portfolio-all_rights_reserved-999?style=flat-square)](LICENSE)
 
 ### [Visit losbatracios.com](https://losbatracios.com) · [English](https://losbatracios.com/en/)
 
@@ -44,17 +45,11 @@ I wanted a page that looks like the film, loads fast on a phone, and turns a vis
 </table>
 </div>
 
-## Run it
+## About this repo
 
-```bash
-pip install pillow
-python3 build.py              # writes the site to sitio/
-npx wrangler pages deploy sitio --project-name <your-project>
-```
+This repository is here to show how the site is built, not to be redeployed. It's public for portfolio review; the site, its text and its artwork belong to the film (see [LICENSE](LICENSE)). A couple of things are left out on purpose: the licensed Aeonik font and the press kits.
 
-`site/` holds a copy of what's live right now. Two things aren't in the repo: the Aeonik font, which is licensed, and the press kits. The build skips them with a warning and falls back to a system font. For the mailing list, set `BUTTONDOWN_API_KEY` and `TURNSTILE_SECRET_KEY` in Cloudflare and change `UMAMI_ID`, `TURNSTILE_SITEKEY` and the links at the top of `build.py` to your own.
-
-The code comments are in Spanish.
+The build is one `build.py` that writes the whole site (both languages, SEO, share images, redirects and the Worker) to plain HTML and WebP. The code comments are in Spanish.
 
 ---
 
